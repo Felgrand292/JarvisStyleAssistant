@@ -55,13 +55,13 @@ class Core:
 		print(helloOps[randrange(0,len(helloOps))],nameOps[randrange(0,len(nameOps))],NAME,"!")
 
 conn = sqlite3.connect('storage.db')																	#Database Initialization
-"""conn.execute('''CREATE TABLE EVENTS
+conn.execute('''CREATE TABLE IF NOT EXISTS EVENTS
 		(ID INT PRIMARY KEY		NOT NULL,
 		TITLE 			TEXT 	NOT NULL,
-		DATEPART 			TEXT 	NOT NULL,
+		DATEPART 		TEXT 	NOT NULL,
 		DESCRIPTION 	CHAR(50),
 		WITH 			CHAR(30),
-		ADDRESS			CHAR(250));''')"""	#For making new databases
+		ADDRESS			CHAR(250));''')	#For making new databases
 
 c = Core()
 """ TO-DO
