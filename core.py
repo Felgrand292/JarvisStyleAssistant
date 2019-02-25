@@ -50,7 +50,7 @@ class Core:
 	def currentUpdate(self):
 		now = datetime.datetime.now()
 		i = randrange(0,len(timeUpdateOps))
-		print("The current date and time",timeUpdateOps[i],":",now.strftime("%Y-%m-%d %H:%M"))
+		print("The current date and time "+timeUpdateOps[i]+": "+now.strftime("%Y-%m-%d %H:%M"))
 	def introduce(self):
 		print(helloOps[randrange(0,len(helloOps))],nameOps[randrange(0,len(nameOps))],NAME,"!")
 
