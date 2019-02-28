@@ -16,15 +16,15 @@ statementTakingOps = [
 ]
 
 timeUpdateOps = [
-"is now",
-"are",
+"is now ",
+"are ",
 ]
 
 nameOps = [
-"my name is",
-"I am",
-"I am called",
-"you can call me",
+"my name is ",
+"I am ",
+"I am called ",
+"you can call me ",
 ]
 
 couldOps = [
@@ -92,5 +92,12 @@ nightOffOps = [
 "Goodnight, sir",
 "Sleep well",
 "Sleep well, sir",
+]
+
+morningOnOps = [
+"Good Morning, sir",
+"Good Morning",
+"A good sleep?",
+"A good sleep, sir?"
 ]
 

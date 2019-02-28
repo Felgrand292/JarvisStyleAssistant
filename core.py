@@ -19,7 +19,7 @@ class Core:
 
 		print("")																					#Starts statement cycle of the program, ends initialization
 		print(helloOps[i])
-		self.idnum = "1"
+		self.idnum = "2"
 		self.input()
 
 	def input(self):
@@ -41,25 +41,31 @@ class Core:
 			self.who = input("With anyone in particular? ")
 			if "no" in self.who:
 				self.who = "NULL"
+			self.desc = input("Would you like to add a description? ")
+			if "no" in self.desc:
+				self.desc = "NULL"
 			self.more = input("Will there be anything else, sir? ")
-			conn.execute("INSERT INTO EVENTS (ID,TITLE,DATEPART) \
-				VALUES ("+self.idnum+",'"+self.title+"','"+self.date+"')");							#WORKING ON EVENT FORGING - Currently adds events to database
+			conn.execute("INSERT INTO EVENTS (TITLE,DATEPART,DESCRIPTION) \
+				VALUES ('"+self.title+"','"+self.date+"','"+self.desc+"')");							#WORKING ON EVENT FORGING - Currently adds events to database
 			conn.commit()
 			print(yesWillDoOps[randrange(0,len(yesWillDoOps))])
+			self.input()
+		if "new" and "daily" in self.statment:
+			self.newReminder()
 		input("Error with statement")
 	def currentUpdate(self):
 		now = datetime.datetime.now()
 		i = randrange(0,len(timeUpdateOps))
-		print("The current date and time "+timeUpdateOps[i]+": "+now.strftime("%Y-%m-%d %H:%M"))
+		print("The current date and time "+timeUpdateOps[i]+":"+now.strftime("%Y-%m-%d %H:%M"))
 	def introduce(self):
-		print(helloOps[randrange(0,len(helloOps))],nameOps[randrange(0,len(nameOps))],NAME,"!")
+		print(helloOps[randrange(0,len(helloOps))]+nameOps[randrange(0,len(nameOps))]+NAME+"!")
 
 conn = sqlite3.connect('storage.db')																	#Database Initialization
 conn.execute('''CREATE TABLE IF NOT EXISTS EVENTS
-		(ID INT PRIMARY KEY		NOT NULL,
+		(ID INTEGER PRIMARY KEY		NOT NULL,
 		TITLE 			TEXT 	NOT NULL,
 		DATEPART 		TEXT 	NOT NULL,
-		DESCRIPTION 	CHAR(50),
+		DESCRIPTION 	CHAR(150),
 		WITH 			CHAR(30),
 		ADDRESS			CHAR(250));''')	#For making new databases
 
