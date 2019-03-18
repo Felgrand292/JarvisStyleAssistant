@@ -13,6 +13,6 @@ Responds with a unique human-esque language
 
 Currently done:
 Record and not events (Using SQLite)
-Responds with a unique human-esque language (Used methods similar to Event[0]'s in game AI
+Responds with a unique human-esque language (Used methods similar to Event[0]'s in game AI)
 
 
