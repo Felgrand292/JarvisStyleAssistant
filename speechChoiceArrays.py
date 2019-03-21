@@ -101,3 +101,13 @@ morningOnOps = [
 "A good sleep, sir?"
 ]
 
+yesResponseOps = [
+"yes",
+"yeah",
+"sure",
+"if you wouldn't mind",
+"please",
+"that would be great",
+"that would be lovely",
+
+]

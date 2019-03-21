@@ -24,6 +24,7 @@ class Core:
 		print("")																					#Starts statement cycle of the program, ends initialization
 		print(helloOps[i])
 		self.checkAlarm()
+		self.checkEvent()
 		t = Thread(target=self.getTime)																#Starts a parallel function in the background that becomes the clock.
 		t.start()
 		self.input()
@@ -35,19 +36,28 @@ class Core:
 			time.sleep(0.8)
 			now = datetime.datetime.now()															#Loop running in background constantly updates to the current time
 			self.currenttime = now.strftime("%H:%M:%S")
-			for i in range (0, len(self.alarmtimes)):
-				if self.alarmtimes[i][0] == self.currenttime:
-					print(self.alarmname[i][0])
+			for i in range (0, len(self.onAlarmTimes)):
+				if self.onAlarmTimes[i][0] == self.currenttime:
 					os.system('glorious.mp3')														#Plays alarm song on detection
 			
 
 	def checkAlarm(self):
 		cur.execute("SELECT ALARMTIME FROM ALARM");
 		self.alarmtimes = cur.fetchall()
-		for i in range (0, len(self.alarmtimes)):
-			print(self.alarmtimes[i][0])
+		cur.execute("SELECT ALARMTIME FROM ALARM WHERE SETTING='1'");
+		self.onAlarmTimes = cur.fetchall()
+		cur.execute("SELECT NAME FROM ALARM WHERE SETTING='1'");
+		self.onAlarmNames = cur.fetchall()
 		cur.execute("SELECT NAME FROM ALARM");
 		self.alarmname = cur.fetchall()
+		for i in range (0, len(self.alarmtimes)):
+			print(self.alarmtimes[i][0]+"	"+self.alarmname[i][0])
+
+	def checkEvent(self):
+		cur.execute("SELECT TITLE FROM EVENTS WHERE DATEPART='"+self.currentday+"'");
+		self.todaysEvents = cur.fetchall()
+		cur.execute("SELECT TITLE FROM EVENTS");
+		self.allTodaysEvents = cur.fetchall()
 
 	def todo(self):
 		day = datetime.datetime.now()
@@ -58,36 +68,53 @@ class Core:
 		print("Today is "+self.currentday+", sir.")
 		cur.execute("SELECT TITLE FROM DAILY WHERE DATEPART='"+self.currentday+"'");
 		self.daily = cur.fetchall()
-		print("For today, sir, you have: ")
-		for i in range (0,len(self.daily)):
-			print(str(self.daily[i][0])+".")
-		print("Good luck, sir")
-		print(day.strftime("%H:%M"))
+		if len(self.daily) != 0:
+			print("For today, sir, you have: ")
+			for i in range (0,len(self.daily)):
+				print(str(self.daily[i][0])+".")
+			print("Good luck, sir")
+			print(day.strftime("%H:%M"))
+		if len(self.daily) == 0:
+			print("No daily tasks for today, sir! ")
 
 	def input(self):
 		i = randrange(0,len(statementTakingOps))
 		self.statment = input(statementTakingOps[i])
+		#self.statmentlist = self.prestatment.split(' ')											# >> FOR SPLITTING INPUT INTO LIST <<
+		if ("turn" in self.statment) and ("alarm" in self.statment):
+			for i in range (0, len(self.alarmtimes)):
+				if self.alarmname[i][0] in self.statment:
+					if "on" in self.statment:
+						print("POINT 3")
+						conn.execute("UPDATE ALARM SET SETTING='1' WHERE NAME='"+self.alarmname[i][0]+"'");
+						conn.commit()
+					if "off" in self.statment:
+						conn.execute("UPDATE ALARM SET SETTING='0' WHERE NAME='"+self.alarmname[i][0]+"'");
+						conn.commit()
+
+		if ("what" in self.statment) and (("todo" in self.statment) or ("to do" in self.statment) or ("on" in self.statment)):
+			self.todo()
 		if ("new" in self.statment) and ("alarm" in self.statment):
-			print("TEST2")
 			self.newAlarm()
-		if ("remove" in self.statment) and ("alarm" in self.statment):
-			print("TEST1")
+		if ("remove" in self.statment or "delete" in self.statment) and ("alarm" in self.statment):
 			self.delAlarm()
-		if "what" and "time" in self.statment:														#Checks part of input for parameters
+		if ("what" in self.statment) and ("time" in self.statment):														#Checks part of input for parameters
 			self.currentUpdate()
 			self.input()
 		for i in range (0,len(couldOps)):															#Checks for all versions of "could"
-			if (str(couldOps[i]) or "what") and "your" and "name" in self.statment:					# >> FIX ALL STATEMENT LOGIC <<
+			if (str(couldOps[i]) in self.statment or "what" in self.statment) and "your" in self.statment and ("name" in self.statment or "introduce" in self.statment):					# >> FIX ALL STATEMENT LOGIC <<
 				self.introduce()
 				self.input()
-			if (str(couldOps[i]) or "what") and "your" and "introduce" in self.statment:
-				self.introduce()
-				self.input()
-		if ("new" or "make") and "event" in self.statment:
+		if ("new" in self.statment or "make" in self.statment) and "event" in self.statment:
 			self.newEvent()
 		if "new" and "daily" in self.statment:
 			self.newReminder()
-		os.system('cls')
+		if ("remove" in self.statment or "delete" in self.statment) and ("event" in self.statment):
+			self.delEvent()
+		print("Restarting ")
+		print("")
+		self.checkAlarm()
+		self.checkEvent()
 		self.input()
 
 	def newEvent(self):
@@ -109,7 +136,7 @@ class Core:
 	def currentUpdate(self):
 		now = datetime.datetime.now()
 		i = randrange(0,len(timeUpdateOps))
-		print("The current date and time "+timeUpdateOps[i]+":"+now.strftime("%Y-%m-%d %H:%M"))
+		print("The current date and time "+timeUpdateOps[i]+":"+now.strftime("%d/%m/%Y %H:%M"))
 
 	def introduce(self):
 		print(helloOps[randrange(0,len(helloOps))]+nameOps[randrange(0,len(nameOps))]+NAME+"!")
@@ -128,15 +155,31 @@ class Core:
 	def newAlarm(self):
 		self.alName = input("What's the alarm name? ")
 		self.alTime = input("Time for alarm? ")
-		conn.execute("INSERT INTO ALARM (NAME, ALARMTIME) \
-			VALUES('"+self.alName+"','"+self.alTime+":00')");
+		conn.execute("INSERT INTO ALARM (NAME, ALARMTIME, SETTING) \
+			VALUES('"+self.alName+"','"+self.alTime+":00', 1)");
 		conn.commit()
 
 	def delAlarm(self):
-		self.delAl = input("Which alarm would you like to remove, sir? ")
-		conn.execute("DELETE FROM ALARM WHERE NAME='"+self.delAl+"'");
-		conn.commit()
-		print("Done, sir")
+		for i in range (0, len(self.alarmname)):
+			if self.alarmname[i][0] in self.statment:
+				self.delAl = self.alarmname[i][0]#input("Which alarm would you like to remove, sir? ")
+				conn.execute("DELETE FROM ALARM WHERE NAME='"+self.delAl+"'");
+				conn.commit()
+				print("Done, sir")
+
+	def delEvent(self):
+		for i in range (0, len(self.allTodaysEvents)):
+			if self.allTodaysEvents[i][0] in self.statment:
+				self.delEv = self.allTodaysEvents[i][0]#input("Which event would you like to remove, sir? ")
+				conn.execute("DELETE FROM EVENTS WHERE TITLE='"+self.delEv+"'");
+				conn.commit()
+				print("Done, sir")
+
+	def selfDelEvent(self, event):
+		now = datetime.datetime.now()
+		conn.execute("DELETE FROM EVENTS WHERE TITLE='"+event+"' AND DATEPART='"+now.strtime("%d/%m/%Y")+"'");
+
+
 
 conn = sqlite3.connect('storage.db')																	#Database Initialization
 cur = conn.cursor()
@@ -155,15 +198,16 @@ conn.execute('''CREATE TABLE IF NOT EXISTS DAILY
 conn.execute('''CREATE TABLE IF NOT EXISTS ALARM
 		(ID INTEGER PRIMARY KEY		NOT NULL,
 		NAME 			TEXT 	NOT NULL,
-		ALARMTIME 		TEXT 	NOT NULL);''')
+		ALARMTIME 		TEXT 	NOT NULL,
+		SETTING			INT);''')
 
 c = Core()
 """ TO-DO
 >	Impliment speech recognition
->	Create constant time check for dates and times (possibly using update)
+>	Add notifaction for time in Events, if a time has been set
 >	Add function to create dates to be informed of.
->	Store dates in database? - SQL for python? - More likely MYSQLite (As is already imported) < DONE - NEEDS TWEAKING
->	Make alarm feature - if time = alarm variable, fire alartm function which plays music until a given input - have multiple, easy set alarms
+>	Output todays events and have the ability to ask for the description
+>	Consider adding Bag-Of Words style word processing to allow for single stage commands
 >	Add Daily description of events - Queries databse for all events on current day upon startup? - Puts events into variables for later use?
 """
 conn.close()
